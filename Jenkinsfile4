@@ -1,7 +1,7 @@
 
 pipeline {
 
-    agent any
+    agent none
 
     tools {
         maven 'mymaven'
@@ -13,9 +13,10 @@ pipeline {
         booleanParam(name: 'executeTests', defaultValue: true, description: 'Decide to run test cases')
         choice(name: 'APPVERSION', choices: ['1.1', '1.2', '1.3'], description: 'Select application version')
     }
-    
+
     stages {
         stage('Compile') {
+            agent any
             steps {
                 script{
                       echo "Compiling the code in ${params.Env} environments"
@@ -34,9 +35,15 @@ pipeline {
                 echo "Running the unit tests in ${params.Env} environments"
                 sh "mvn test"
                 }
+            }
+                post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
            }
-        }
              stage('CodeReview') {
+                agent any
               steps {
                  script{
                     echo 'reviewing the code'
@@ -45,6 +52,7 @@ pipeline {
               }
              }
              stage('CodeCoverageAnalysis') {
+                agent label 'linux_slave'
                 steps {
                     script{
                         echo 'checking the code coverage'
@@ -53,6 +61,7 @@ pipeline {
                 }
              }
          stage('Package') {
+            agent any
              steps {
                 script{
                      echo "compiling the code in ${params.APPVERSION} environments"

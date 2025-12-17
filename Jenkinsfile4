@@ -62,7 +62,7 @@ pipeline {
                 steps {
                     script{
                         echo 'checking the code coverage'
-                        sh "mvn verify"
+                        sh "mvn clean verify -B || exit 1"
                     }
                 }
              }

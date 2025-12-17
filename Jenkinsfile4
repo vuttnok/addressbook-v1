@@ -96,7 +96,7 @@ pipeline {
                 sh "ssh ${DEPLOY_SERVER} sudo systemctl start docker"
                 sh "ssh ${DEPLOY_SERVER} sudo docker login -u ${username} -p ${password}"
                // sh "ssh -o StrictHostKeyChecking=no ${BUILD_SERVER} sudo docker push ${IMAGE_NAME}"
-                sh "ssh ${DEPLOY_SERVER} docker run -itd -P ${IMAGE_NAME}"
+                sh "ssh ${DEPLOY_SERVER} sudo docker run -itd -P ${IMAGE_NAME}"
     
                 }
                 }    

@@ -72,10 +72,10 @@ pipeline {
                 script{ 
                 sshagent(['slave2']) {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'password', usernameVariable: 'username')]) {
-                sh "ssh -o StrictHostKeyChecking=no ${BUILD_SERVER} sudo yum install docker -y"
-                sh "ssh  ${BUILD_SERVER} sudo service docker start"
-                sh "ssh  ${BUILD_SERVER} sudo docker login -u ${username} -p ${password}"
-                sh "ssh  ${BUILD_SERVER} sudo docker run -itd -P ${IMAGE_NAME}"
+                sh "scp -o StrictHostKeyChecking=no server-script.sh ${BUILD_SERVER}:/home/ec2-user/"
+                sh "ssh -o StrictHostKeyChecking=no ${BUILD_SERVER} bash /home/ec2-user/server-script.sh ${IMAGE_NAME}"
+                sh "ssh -o StrictHostKeyChecking=no ${BUILD_SERVER} sudo docker login -u ${username} -p ${password}"
+                sh "ssh -o StrictHostKeyChecking=no ${BUILD_SERVER} sudo docker push ${IMAGE_NAME}"
                 }
             
              }

@@ -15,7 +15,7 @@ pipeline {
     }
 
     environment{
-        BUILD_SERVER='ec2-user@172.31.13.225'
+        BUILD_SERVER='ec2-user@172.31.8.89'
         IMAGE_NAME='kalyani145/java-mvn-privaterepos:$BUILD_NUMBER'
         DEPLOY_SERVER='ec2-user@172.31.13.82'
     }

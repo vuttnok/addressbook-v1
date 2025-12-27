@@ -13,7 +13,7 @@ copy ./src /app/src
 RUN mvn package
 
 # Stage 2: Production stage
-FROM tomcat:8.5.78-jdk11-openjdk-slim
+FROM tomcat:8.5-jdk11-temurin
 # Copy the built WAR file from the build stage to the Tomcat webapps directory
 COPY --from=build-stage /app/target/*.war /usr/local/tomcat/webapps/
 # Expose the port on which Tomcat will listen (usually port 8080)

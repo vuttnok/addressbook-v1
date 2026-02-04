@@ -17,7 +17,7 @@ pipeline {
     environment{
         BUILD_SERVER='ec2-user@172.31.8.89'
         IMAGE_NAME='vuttnoork/java-mvn-privaterepos:$BUILD_NUMBER'
-        DEPLOY_SERVER='ec2-user@172.31.13.82'
+        
     }
 
     stages {
@@ -82,6 +82,21 @@ pipeline {
              }
                 }
                 }
+
+        stage('Provision deploy server with terraform'){
+            agent any
+              steps {
+              script {
+              echo 'Provisioning the deploy server with Terraform'
+              dir('terraform') {
+              // Assuming the Terraform files are in a directory named 'terraform'
+              sh 'terraform init'
+              sh 'terraform apply -auto-approve'
+              EC2_PUBLIC_IP = sh(script: 'terraform output ec2-ip', returnStdout:true).trim()
+ }
+ }
+ }
+}
          
          
              stage('Deploy docker image') {
@@ -89,15 +104,16 @@ pipeline {
              steps {
                 script{ 
                 sshagent(['slave2']) {
+                echo 'packaging the code'
+                echo "${EC2_PUBLIC_IP}"
                 withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'password', usernameVariable: 'username')]) {
                 //sh "scp -o StrictHostKeyChecking=no server-script.sh ${BUILD_SERVER}:/home/ec2-user/"
                 //sh "ssh -o StrictHostKeyChecking=no ${BUILD_SERVER} bash /home/ec2-user/server-script.sh ${IMAGE_NAME}"
-                sh "ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} sudo yum install docker -y"
-                sh "ssh ${DEPLOY_SERVER} sudo systemctl start docker"
-                sh "ssh ${DEPLOY_SERVER} sudo docker login -u ${username} -p ${password}"
+                sh "ssh -o StrictHostKeyChecking=no ${EC2_PUBLIC_IP} sudo yum install docker -y"
+                sh "ssh ec2-user@${EC2_PUBLIC_IP} sudo systemctl start docker"
+                sh "ssh ec2-user@${EC2_PUBLIC_IP} sudo docker login -u ${username} -p ${password}"
                // sh "ssh -o StrictHostKeyChecking=no ${BUILD_SERVER} sudo docker push ${IMAGE_NAME}"
-                sh "ssh ${DEPLOY_SERVER} sudo docker run -itd -P ${IMAGE_NAME}"
-    
+                sh "ssh ec2-user@${EC2_PUBLIC_IP} sudo docker run -itd -p 8080:8080 ${IMAGE_NAME}"
                 }
                 }    
              }
